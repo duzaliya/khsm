@@ -1,6 +1,6 @@
 #  (c) goodprogrammer.ru
 #
-# Модельи игры — создается когда пользователь начинает новую игру
+# Модель игры — создается когда пользователь начинает новую игру
 # Хранит/обновляет состояние игры и отвечает за игровой процесс.
 class Game < ActiveRecord::Base
 
@@ -94,11 +94,11 @@ class Game < ActiveRecord::Base
   #
   # возвращает false — если 1) ответ неверный 2) время вышло 3) игра уже закончена ранее
   #   в любом случае прописывается :finished_at, :prize (если несгораемый уровень), :updated_at
-  # После вызова этого метода обновлится .status игры
+  # После вызова этого метода обновится .status игры
   #
   # letter = 'a','b','c' или 'd'
   def answer_current_question!(letter)
-    return false if time_out! || finished? # законченную игру низя обновлять
+    return false if time_out! || finished? # законченную игру нельзя обновлять
 
     if current_game_question.answer_correct?(letter)
       if current_level == Question::QUESTION_LEVELS.max
@@ -214,5 +214,4 @@ class Game < ActiveRecord::Base
     lvl = FIREPROOF_LEVELS.select { |x| x <= answered_level }.last
     lvl.present? ? PRIZES[lvl] : 0
   end
-
 end

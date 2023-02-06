@@ -64,7 +64,6 @@ class GamesController < ApplicationController
       # <controller>/<action>.<format>.erb (в нашем случае games/answer.js.erb)
       format.js {}
     end
-
   end
 
   # вызывается из вьюхи без параметров
