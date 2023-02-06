@@ -38,10 +38,8 @@ RSpec.describe Game, type: :model do
     end
   end
 
-
   # тесты на основную игровую логику
   context 'game mechanics' do
-
     # правильный ответ должен продолжать игру
     it 'answer correct continues game' do
       # текущий уровень игры и статус
@@ -59,6 +57,58 @@ RSpec.describe Game, type: :model do
       # игра продолжается
       expect(game_w_questions.status).to eq(:in_progress)
       expect(game_w_questions.finished?).to be_falsey
+    end
+
+    it 'take money! finishes the game' do
+      # игра начата и отвечен верно хотя бы один вопрос
+      q = game_w_questions.current_game_question
+      game_w_questions.answer_current_question!(q.correct_answer_key)
+
+      # взяли деньги
+      game_w_questions.take_money!
+
+      prize = game_w_questions.prize
+      expect(prize).to be > 0
+
+      # проверим, что игра закончилась и баланс игрока пополнился
+      expect(game_w_questions.finished?).to be_truthy
+      expect(game_w_questions.status).to eq :money
+      expect(user.balance).to eq prize
+    end
+
+    it 'return correct previous_level' do
+      expect(game_w_questions.previous_level).to eq(game_w_questions.current_level - 1)
+    end
+
+    it 'return first question as current_game_question' do
+      expect(game_w_questions.current_game_question).to eq(game_w_questions.game_questions.first)
+    end
+  end
+
+  context '.status' do
+    before(:each) do
+      game_w_questions.finished_at = Time.now
+      expect(game_w_questions.finished?).to be_truthy
+    end
+
+    it ':fail' do
+      game_w_questions.is_failed = true
+      expect(game_w_questions.status).to eq(:fail)
+    end
+
+    it ':timeout' do
+      game_w_questions.created_at = 1.hour.ago
+      game_w_questions.is_failed = true
+      expect(game_w_questions.status).to eq(:timeout)
+    end
+
+    it ':won' do
+      game_w_questions.current_level = Question::QUESTION_LEVELS.max + 1
+      expect(game_w_questions.status).to eq(:won)
+    end
+
+    it ':money' do
+      expect(game_w_questions.status).to eq(:money)
     end
   end
 end

@@ -8,7 +8,6 @@ module MySpecHelper
   end
 end
 
-
 RSpec.configure do |c|
   c.include MySpecHelper
 end
