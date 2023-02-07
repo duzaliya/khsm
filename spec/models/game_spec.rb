@@ -111,4 +111,57 @@ RSpec.describe Game, type: :model do
       expect(game_w_questions.status).to eq(:money)
     end
   end
+
+  describe '#answer_current_question!' do
+    let(:q) { game_w_questions.current_game_question }
+
+    context 'answer is right' do
+      before(:each) do
+        game_w_questions.answer_current_question!(q.correct_answer_key)
+      end
+
+      context 'question is not last' do
+        it 'continues the game' do
+          expect(game_w_questions.current_level).to eq(1)
+          expect(game_w_questions.status).to eq(:in_progress)
+          expect(game_w_questions.finished?).to be_falsey
+        end
+      end
+
+      context 'question is last' do
+        before(:each) do
+          game_w_questions.current_level = Question::QUESTION_LEVELS.last
+          game_w_questions.answer_current_question!(q.correct_answer_key)
+        end
+
+        it 'finishes the game with the highest prize' do
+          expect(game_w_questions.finished?).to be_truthy
+          expect(game_w_questions.status).to eq(:won)
+          expect(game_w_questions.prize).to eq(Game::PRIZES.last)
+        end
+      end
+    end
+
+    context 'answer is wrong' do
+      before(:each) do
+        game_w_questions.answer_current_question!('y')
+      end
+
+      it 'finishes the game with balance = 0' do
+        expect(game_w_questions.finished?).to be_truthy
+        expect(game_w_questions.status).to eq(:fail)
+        expect(user.balance).to eq(0)
+      end
+    end
+
+    context 'time is over' do
+      before { game_w_questions.created_at = 36.minutes.ago }
+
+      it 'finishes the game absolutely' do
+        expect(game_w_questions.time_out!).to be_truthy
+        expect(game_w_questions.finished?).to be_truthy
+        expect(game_w_questions.status).to eq(:timeout)
+      end
+    end
+  end
 end
