@@ -126,7 +126,7 @@ RSpec.describe GamesController, type: :controller do
       context 'answers incorrectly' do
         before { put :answer, id: game_w_questions.id, letter: 'y' }
 
-        it 'finishes the game with prize = 0' do
+        it 'finishes the game' do
           expect(game.finished?).to be true
           expect(response).to redirect_to(user_path(user))
           expect(flash[:alert]).to be
