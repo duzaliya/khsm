@@ -109,16 +109,28 @@ RSpec.describe GamesController, type: :controller do
     end
 
     context 'signed in user'do
-      before do
-        sign_in user
-        put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
+      before { sign_in user }
+
+      context 'answers correct' do
+        before { put :answer, id: game_w_questions.id,
+                     letter: game_w_questions.current_game_question.correct_answer_key }
+
+        it 'moves on to the next question' do
+          expect(game.finished?).to be false
+          expect(game.current_level).to be > 0
+          expect(response).to redirect_to(game_path(game))
+          expect(flash.empty?).to be_truthy # удачный ответ не заполняет flash
+        end
       end
 
-      it 'answers correct' do
-        expect(game.finished?).to be false
-        expect(game.current_level).to be > 0
-        expect(response).to redirect_to(game_path(game))
-        expect(flash.empty?).to be_truthy # удачный ответ не заполняет flash
+      context 'answers incorrectly' do
+        before { put :answer, id: game_w_questions.id, letter: 'y' }
+
+        it 'finishes the game with prize = 0' do
+          expect(game.finished?).to be true
+          expect(response).to redirect_to(user_path(user))
+          expect(flash[:alert]).to be
+        end
       end
     end
   end
