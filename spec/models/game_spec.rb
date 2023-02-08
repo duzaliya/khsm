@@ -75,39 +75,43 @@ RSpec.describe Game, type: :model do
       expect(game_w_questions.status).to eq :money
       expect(user.balance).to eq prize
     end
+  end
 
-    it 'return correct previous_level' do
+  describe '#previous_level' do
+    it 'returns correct previous_level' do
       expect(game_w_questions.previous_level).to eq(game_w_questions.current_level - 1)
     end
+  end
 
-    it 'return first question as current_game_question' do
+  describe '#current_game_question' do
+    it 'returns first question as current_game_question' do
       expect(game_w_questions.current_game_question).to eq(game_w_questions.game_questions.first)
     end
   end
 
-  context '.status' do
+  describe '#status' do
     before(:each) do
       game_w_questions.finished_at = Time.now
       expect(game_w_questions.finished?).to be_truthy
     end
 
-    it ':fail' do
+    it 'returns :fail' do
       game_w_questions.is_failed = true
       expect(game_w_questions.status).to eq(:fail)
     end
 
-    it ':timeout' do
+    it 'returns :timeout' do
       game_w_questions.created_at = 1.hour.ago
       game_w_questions.is_failed = true
       expect(game_w_questions.status).to eq(:timeout)
     end
 
-    it ':won' do
+    it 'returns :won' do
       game_w_questions.current_level = Question::QUESTION_LEVELS.max + 1
       expect(game_w_questions.status).to eq(:won)
     end
 
-    it ':money' do
+    it 'returns :money' do
       expect(game_w_questions.status).to eq(:money)
     end
   end
